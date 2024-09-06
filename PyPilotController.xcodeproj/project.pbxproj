@@ -12,6 +12,7 @@
 		EFC75CD72C89F58D003624E7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC75CD62C89F58D003624E7 /* ContentView.swift */; };
 		EFC75CD92C89F58F003624E7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFC75CD82C89F58F003624E7 /* Assets.xcassets */; };
 		EFC75CDC2C89F58F003624E7 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFC75CDB2C89F58F003624E7 /* Preview Assets.xcassets */; };
+		EFC75CE72C8A14BD003624E7 /* PyPilot.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC75CE62C8A14BD003624E7 /* PyPilot.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +46,7 @@
 		EFC75CD62C89F58D003624E7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		EFC75CD82C89F58F003624E7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EFC75CDB2C89F58F003624E7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		EFC75CE62C8A14BD003624E7 /* PyPilot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PyPilot.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +80,7 @@
 		EFC75CD32C89F58D003624E7 /* PyPilotController Watch App */ = {
 			isa = PBXGroup;
 			children = (
+				EFC75CE62C8A14BD003624E7 /* PyPilot.swift */,
 				EFC75CD42C89F58D003624E7 /* PyPilotControllerApp.swift */,
 				EFC75CD62C89F58D003624E7 /* ContentView.swift */,
 				EFC75CD82C89F58F003624E7 /* Assets.xcassets */,
@@ -194,6 +197,7 @@
 			files = (
 				EFC75CD72C89F58D003624E7 /* ContentView.swift in Sources */,
 				EFC75CD52C89F58D003624E7 /* PyPilotControllerApp.swift in Sources */,
+				EFC75CE72C8A14BD003624E7 /* PyPilot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
