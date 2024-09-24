@@ -47,13 +47,13 @@ class PyPilot : NSObject,   ObservableObject{
     @Published var connectionState : BLEState = .off
     
     
-    @Published var editedCommand : Double = 90.0
+    @Published var editedCommand : Double = 0.0
     @Published var editedMode : Double = 0.0
     @Published var engaged : Bool = false
-    @Published var heading : Double = 120.0
-    @Published var command : Double = 90.0
-    @Published var mode : PilotMode = .compass
-    @Published var rudderAngle : Double = 10
+    @Published var heading : Double = 0
+    @Published var command : Double = 0
+    @Published var mode : PilotMode = .rudder
+    @Published var rudderAngle : Double = 0.0
     @Published var tackState : TackState = .none
     @Published var tackDirection : TackDirection = .none
     
