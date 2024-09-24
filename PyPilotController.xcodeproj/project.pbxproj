@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EF1F0D902C8AF4010073F453 /* CompassMarkerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1F0D8F2C8AF4010073F453 /* CompassMarkerView.swift */; };
+		EF7FCE592C8C851100E19B2D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = EF7FCE582C8C851100E19B2D /* README.md */; };
 		EFC75CD02C89F58D003624E7 /* PyPilotController Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = EFC75CCF2C89F58D003624E7 /* PyPilotController Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EFC75CD52C89F58D003624E7 /* PyPilotControllerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC75CD42C89F58D003624E7 /* PyPilotControllerApp.swift */; };
 		EFC75CD72C89F58D003624E7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC75CD62C89F58D003624E7 /* ContentView.swift */; };
@@ -40,6 +42,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EF1F0D8F2C8AF4010073F453 /* CompassMarkerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassMarkerView.swift; sourceTree = "<group>"; };
+		EF7FCE582C8C851100E19B2D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		EF92F4F52CA2CC9B002F4696 /* PyPilotController-Watch-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "PyPilotController-Watch-App-Info.plist"; sourceTree = SOURCE_ROOT; };
 		EFC75CC92C89F58D003624E7 /* PyPilotController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PyPilotController.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFC75CCF2C89F58D003624E7 /* PyPilotController Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PyPilotController Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFC75CD42C89F58D003624E7 /* PyPilotControllerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PyPilotControllerApp.swift; sourceTree = "<group>"; };
@@ -63,6 +68,7 @@
 		EFC75CC22C89F58D003624E7 = {
 			isa = PBXGroup;
 			children = (
+				EF7FCE582C8C851100E19B2D /* README.md */,
 				EFC75CD32C89F58D003624E7 /* PyPilotController Watch App */,
 				EFC75CCA2C89F58D003624E7 /* Products */,
 			);
@@ -80,8 +86,10 @@
 		EFC75CD32C89F58D003624E7 /* PyPilotController Watch App */ = {
 			isa = PBXGroup;
 			children = (
+				EF92F4F52CA2CC9B002F4696 /* PyPilotController-Watch-App-Info.plist */,
 				EFC75CE62C8A14BD003624E7 /* PyPilot.swift */,
 				EFC75CD42C89F58D003624E7 /* PyPilotControllerApp.swift */,
+				EF1F0D8F2C8AF4010073F453 /* CompassMarkerView.swift */,
 				EFC75CD62C89F58D003624E7 /* ContentView.swift */,
 				EFC75CD82C89F58F003624E7 /* Assets.xcassets */,
 				EFC75CDA2C89F58F003624E7 /* Preview Content */,
@@ -183,6 +191,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF7FCE592C8C851100E19B2D /* README.md in Resources */,
 				EFC75CDC2C89F58F003624E7 /* Preview Assets.xcassets in Resources */,
 				EFC75CD92C89F58F003624E7 /* Assets.xcassets in Resources */,
 			);
@@ -196,6 +205,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EFC75CD72C89F58D003624E7 /* ContentView.swift in Sources */,
+				EF1F0D902C8AF4010073F453 /* CompassMarkerView.swift in Sources */,
 				EFC75CD52C89F58D003624E7 /* PyPilotControllerApp.swift in Sources */,
 				EFC75CE72C8A14BD003624E7 /* PyPilot.swift in Sources */,
 			);
@@ -337,7 +347,10 @@
 				DEVELOPMENT_TEAM = N72U6DTDRE;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PyPilotController-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = PyPilotController;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Needs Bluetooth to connect to PyPilot";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKWatchOnly = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -367,7 +380,10 @@
 				DEVELOPMENT_TEAM = N72U6DTDRE;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PyPilotController-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = PyPilotController;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Needs Bluetooth to connect to PyPilot";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKWatchOnly = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
