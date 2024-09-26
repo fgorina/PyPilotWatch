@@ -36,14 +36,13 @@ class PyPilot : NSObject,   ObservableObject{
     }
     
     enum PilotMode : String {
-        case rudder = "rudder"
         case compass = "compass"
         case gps = "gps"
         case wind = "wind"
         case trueWind = "true wind"
     }
     
-    static var modes : [PilotMode] = [.compass, .gps, .wind, .trueWind, .rudder]
+    static var modes : [PilotMode] = [.compass, .gps, .wind, .trueWind]
     //static var shared : PyPilot = PyPilot()
     @Published var connectionState : BLEState = .connected
     
@@ -311,7 +310,7 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
         
         // Discover services and characteristics of the connected peripheral
         connectedPeripheral?.discoverServices(nil)
-        
+        self.errorMessage = nil
         Logger().debug("Connected to peripheral: \(peripheral)")
     }
     
@@ -401,11 +400,13 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
                     case "E":
                         DispatchQueue.main.async{
                             self.engaged = true
+                            self.editedCommand = self.command
                         }
                         
                     case "D":
                         DispatchQueue.main.async{
                             self.engaged = false
+                            self.editedCommand = self.rudderAngle
                         }
                         
                     case "R":
@@ -442,7 +443,7 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
                                     self.mode = v
                                     self.editedMode = Double(iv)
                                     
-                                    if (self.mode != .rudder){
+                                    if (self.engaged){
                                         self.editedCommand = self.command
                                     }else{
                                         self.editedCommand = self.rudderAngle
