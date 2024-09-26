@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreBluetooth
+import OSLog
 
 
 enum BLEState : String {
@@ -44,20 +45,25 @@ class PyPilot : NSObject,   ObservableObject{
     
     static var modes : [PilotMode] = [.compass, .gps, .wind, .trueWind, .rudder]
     //static var shared : PyPilot = PyPilot()
-    @Published var connectionState : BLEState = .off
+    @Published var connectionState : BLEState = .connected
     
-    
+    // MARK: - Edit VCariables
     @Published var editedCommand : Double = 0.0
     @Published var editedMode : Double = 0.0
+    
+    //MARK: - PyPilot State
+    
     @Published var engaged : Bool = false
     @Published var heading : Double = 0
     @Published var command : Double = 0
-    @Published var mode : PilotMode = .rudder
+    @Published var mode : PilotMode = .compass //.rudder
     @Published var rudderAngle : Double = 0.0
     @Published var tackState : TackState = .none
     @Published var tackDirection : TackDirection = .none
     
     @Published var rudderCommand : TackDirection = .none
+    
+    @Published var errorMessage : String?
     
     var minRudder = -30.0
     var maxRudder = 30.0
@@ -82,7 +88,8 @@ class PyPilot : NSObject,   ObservableObject{
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
-        print("Creating CentralManager")
+
+        Logger().debug("Creating CentralManager")
     }
     
     
@@ -91,7 +98,7 @@ class PyPilot : NSObject,   ObservableObject{
     
     func startScanning() {
         // Start scanning for BLE peripherals
-        print("Starting scan for services \(serviceUUID.uuidString)")
+        Logger().debug("Starting scan for services \(self.serviceUUID.uuidString)")
         centralManager.scanForPeripherals(withServices: [serviceUUID], options: nil)
         DispatchQueue.main.async {
             self.connectionState = .scanning
@@ -100,13 +107,13 @@ class PyPilot : NSObject,   ObservableObject{
     
     func stopScanning() {
         // Stop scanning for BLE peripherals
-        print("Stop Scanning")
+        Logger().debug("Stop Scanning")
         centralManager.stopScan()
     }
     
     func connectToPeripheral(_ peripheral: CBPeripheral) {
         // Connect to the specified peripheral
-        print("Connecting to peripheral \(peripheral.name ?? "")")
+        Logger().debug("Connecting to peripheral \(peripheral.name ?? "")")
         centralManager.connect(peripheral, options: nil)
     }
     
@@ -115,7 +122,7 @@ class PyPilot : NSObject,   ObservableObject{
         if let data = value.data(using: .utf8){
             // Check if the commandCharacteristic is valid and connectedPeripheral is set
             guard let commandChar = commandCharacteristic, let peripheral = connectedPeripheral else {
-                print("Invalid command characteristic or not connected to a peripheral.")
+                Logger().debug("Invalid command characteristic or not connected to a peripheral.")
                 return
             }
             
@@ -148,6 +155,13 @@ class PyPilot : NSObject,   ObservableObject{
         }
     }
     
+    func getInfo(){
+        writeValueToCommandCharacteristic("I")
+        //tackState = .none
+        //tackDirection = .none
+        Logger().debug("Asking for full Pilot state")
+   }
+    
     func engage(){
         writeValueToCommandCharacteristic("E")
     }
@@ -161,13 +175,13 @@ class PyPilot : NSObject,   ObservableObject{
     func setCommand(_ command : Double){
         writeValueToCommandCharacteristic("C\(command)")
         //command = rhumb
-        print("Sending \(command) to PyPilot")
+        Logger().debug("Sending \(command) to PyPilot")
     }
     
     func setMode(_ mode : PilotMode){
         writeValueToCommandCharacteristic("M"+mode.rawValue)
         //self.mode = mode
-        print("Setting mode to  \(mode) to PyPilot")
+        Logger().debug("Setting mode to \(mode.rawValue) to PyPilot")
     }
     func sendTackTo(_ direction : TackDirection){
         switch direction {
@@ -186,21 +200,21 @@ class PyPilot : NSObject,   ObservableObject{
         //tackState = .tacking
         //tackDirection = .port
         sendTackTo(.port)
-        print("Sending tack port to PyPilot")
+        Logger().debug("Sending tack port to PyPilot")
     }
     
     func tackStarboard(){
         //tackState = .tacking
         //tackDirection = .starboard
         sendTackTo(.starboard)
-        print("Sending tack Starboard to PyPilot")
+        Logger().debug("Sending tack Starboard to PyPilot")
     }
     
     func cancelTack(){
         writeValueToCommandCharacteristic("X")
         //tackState = .none
         //tackDirection = .none
-        print("Tacking cancelled")
+        Logger().debug("Tacking cancelled")
     }
     
     func sendRudderCommand(_ direction : TackDirection){
@@ -253,7 +267,7 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
         switch central.state {
         case .poweredOn:
             // Bluetooth is powered on, start scanning for peripherals
-            print("Bluetooth powered ON")
+            Logger().debug("Bluetooth powered ON")
             DispatchQueue.main.async {
                 self.connectionState = .on
             }
@@ -263,10 +277,14 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
             DispatchQueue.main.async {
                 self.connectionState = .off
             }
-            print("Bluetooth is powered off.")
+            Logger().debug("Bluetooth is powered off.")
+            errorMessage = "Bluetooth disabled"
+            
+        case .unauthorized:
+            errorMessage = "Not authorized"
             // Handle the situation accordingly
         default:
-            print("BLE Central State \(central.state)")
+            Logger().debug("BLE Central State \(central.state.rawValue)")
             break
         }
     }
@@ -276,7 +294,7 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
         // Called when a peripheral is discovered during scanning
         // You can filter peripherals based on your requirements and connect to the desired one
         
-        print("Found \(peripheral.name ?? "" )")
+        Logger().debug("Found \(peripheral.name ?? "" )")
         if peripheral.name == "PyPilot" || true{       //TODO: Substitute with parameter
             DispatchQueue.main.async {
                 self.connectionState = .connecting
@@ -294,13 +312,18 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
         // Discover services and characteristics of the connected peripheral
         connectedPeripheral?.discoverServices(nil)
         
-        print("Connected to peripheral: \(peripheral)")
+        Logger().debug("Connected to peripheral: \(peripheral)")
     }
     
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: Error?) {
-        
-        print("Disconnected from  peripheral: \(peripheral)")
+        guard error == nil else {
+            Logger().debug("Error disconnectingfrom peripheral: \(error!.localizedDescription)")
+            self.errorMessage = error?.localizedDescription
+            return
+        }
+
+        Logger().debug("Disconnected from  peripheral: \(peripheral)")
         DispatchQueue.main.async {
             self.connectionState = .disconnected
         }
@@ -310,7 +333,8 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard error == nil else {
-            print("Error discovering services: \(error!.localizedDescription)")
+            Logger().debug("Error discovering services: \(error!.localizedDescription)")
+            self.errorMessage = error?.localizedDescription
             return
         }
         
@@ -318,7 +342,7 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
         if let services = peripheral.services {
             for service in services {
                 if service.uuid == serviceUUID{
-                    print("Discovered service: \(service.uuid.uuidString)")
+                    Logger().debug("Discovered service: \(service.uuid.uuidString)")
                     peripheral.discoverCharacteristics(nil, for: service)
                 }
             }
@@ -327,14 +351,15 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard error == nil else {
-            print("Error discovering characteristics: \(error!.localizedDescription)")
+            Logger().debug("Error discovering characteristics: \(error!.localizedDescription)")
+            self.errorMessage = error?.localizedDescription
             return
         }
         
         // Check for the characteristics you need
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                print("Discovered characteristic: \(characteristic.uuid.uuidString)")
+                Logger().debug("Discovered characteristic: \(characteristic.uuid.uuidString)")
                 if characteristic.uuid == commandUUID {
                     commandCharacteristic = characteristic
                 } else if characteristic.uuid == stateUUID {
@@ -345,7 +370,8 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
             }
             
             if commandCharacteristic != nil && pilotStateCharacteristic != nil {
-                print("Now connected to device")
+                Logger().debug("Now connected to device")
+                getInfo()
                 DispatchQueue.main.async {
                     self.connectionState = .connected
                 }
@@ -356,14 +382,18 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        // Called when the value of a characteristic is updated (e.g., for read/notify characteristics)
+        guard error == nil else {
+            Logger().debug("Error discovering characteristics: \(error!.localizedDescription)")
+            self.errorMessage = error?.localizedDescription
+            return
+        }
         if characteristic.uuid == pilotStateCharacteristic?.uuid {
             if let value = characteristic.value {
                 if let svalue = String(data: value, encoding: .utf8){
                     
                     if svalue != oldState {
                         oldState = svalue
-                        print("Received value for pilotStateCharacteristic: \(svalue)")
+                        Logger().debug("Received value for pilotStateCharacteristic: \(svalue)")
                         
                         let command = svalue[svalue.startIndex]
                         switch command  {
@@ -448,6 +478,14 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
                 }
                 }
             }
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: (any Error)?) {
+        guard error == nil else {
+            Logger().debug("Error writing value to characteristics: \(error!.localizedDescription)")
+            self.errorMessage = error?.localizedDescription
+            return
         }
     }
 }

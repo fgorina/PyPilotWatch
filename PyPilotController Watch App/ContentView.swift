@@ -61,7 +61,7 @@ struct ContentView: View {
                                 aboutToTackStarboard = false
                             }
                         }
-                    }.padding([.top], 15)
+                    }.padding([.top], 25)
                 Spacer()
                 
                 
@@ -71,7 +71,7 @@ struct ContentView: View {
                     .focused($targetFocusState)
                     .padding([.leading, .trailing], 10)
                     .border(targetFocusState ? .green : .clear)
-                    .digitalCrownRotation($server.editedCommand, from: server.mode == .rudder ? -30 : 0.0, through: server.mode == .rudder ? 30 : 359.0, by: 1.0, sensitivity: .medium, isContinuous: true, isHapticFeedbackEnabled: true)
+                    .digitalCrownRotation($server.editedCommand, from: server.mode == .rudder ? -30 : 0.0, through: server.mode == .rudder ? 30 : 359.0, by: 1.0, sensitivity: .medium, isContinuous: server.mode != .rudder, isHapticFeedbackEnabled: true)
                     .onTapGesture {
                         if commandEditable {
                             if targetFocusState {
@@ -128,7 +128,7 @@ struct ContentView: View {
                                 aboutToTackPort = false
                             }
                         }
-                    }.padding([.top], 15)
+                    }.padding([.top], 25)
             }
             
             if server.mode == .rudder {  // Show rudder angle!!!
@@ -222,22 +222,31 @@ struct ContentView: View {
                     }
             }
             
-        }
+        }.blur(radius: server.connectionState != .connected ? 4.0 : 0.0)
             if server.connectionState != .connected {
-                RoundedRectangle(cornerRadius: 15)
-                    .background(.ultraThinMaterial)
-                    .frame(width: 170, height: 120)
+                Color.clear
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         if server.connectionState == .disconnected {
                             server.connect()
                         }
                     }
-                VStack{
-                    Text("Disconnected!").foregroundColor(.red).fontWeight(.bold)
-                    Text("Tap to reconnect").foregroundColor(.red).fontWeight(.bold)
-                }
+                Text("Tap to connect")
+                    .foregroundStyle(.red)
+                    .fontWeight(.bold)
+            }else if let err = server.errorMessage {
+                Capsule()
+                    .background(.ultraThinMaterial)
+                    .frame(width: 180, height: 20)
+                    .onTapGesture {
+                        server.errorMessage = nil
+                    }
+                Text(err)
+                    
             }
-    }.onChange(of: phase) { oldValue, newValue in
+        
+    }.ignoresSafeArea()
+            .onChange(of: phase) { oldValue, newValue in
                 switch newValue {
                 case .active:
                     server.connect()
