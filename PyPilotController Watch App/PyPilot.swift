@@ -49,6 +49,10 @@ class PyPilot : NSObject,   ObservableObject{
     // MARK: - Edit VCariables
     @Published var editedCommand : Double = 0.0
     @Published var editedMode : Double = 0.0
+
+    // True while the user is turning the crown on the command field.
+    // Incoming pilot state must not overwrite editedCommand during that time.
+    @Published var editingCommand : Bool = false
     
     //MARK: - PyPilot State
     
@@ -316,9 +320,12 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
     
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: Error?) {
-        guard error == nil else {
-            Logger().debug("Error disconnectingfrom peripheral: \(error!.localizedDescription)")
-            self.errorMessage = error?.localizedDescription
+        if let error = error {
+            Logger().debug("Error disconnecting from peripheral: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.errorMessage = error.localizedDescription
+                self.connectionState = .disconnected
+            }
             return
         }
 
@@ -389,7 +396,7 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
         if characteristic.uuid == pilotStateCharacteristic?.uuid {
             if let value = characteristic.value {
                 if let svalue = String(data: value, encoding: .utf8){
-                    
+                    Logger().debug("Received value for pilotStateCharacteristic: \(svalue)")
                     if svalue != oldState {
                         oldState = svalue
                         Logger().debug("Received value for pilotStateCharacteristic: \(svalue)")
@@ -400,13 +407,17 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
                     case "E":
                         DispatchQueue.main.async{
                             self.engaged = true
-                            self.editedCommand = self.command
+                            if !self.editingCommand {
+                                self.editedCommand = self.command
+                            }
                         }
-                        
+
                     case "D":
                         DispatchQueue.main.async{
                             self.engaged = false
-                            self.editedCommand = self.rudderAngle
+                            if !self.editingCommand {
+                                self.editedCommand = self.rudderAngle
+                            }
                         }
                         
                     case "R":
@@ -430,7 +441,9 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
                         if let v = Double(sparam){
                             DispatchQueue.main.async{
                                 self.command =  v
-                                self.editedCommand = v
+                                if !self.editingCommand {
+                                    self.editedCommand = v
+                                }
                             }
                         }
                         
@@ -442,11 +455,13 @@ extension PyPilot : CBCentralManagerDelegate, CBPeripheralDelegate {
                                 DispatchQueue.main.async{
                                     self.mode = v
                                     self.editedMode = Double(iv)
-                                    
-                                    if (self.engaged){
-                                        self.editedCommand = self.command
-                                    }else{
-                                        self.editedCommand = self.rudderAngle
+
+                                    if !self.editingCommand {
+                                        if (self.engaged){
+                                            self.editedCommand = self.command
+                                        }else{
+                                            self.editedCommand = self.rudderAngle
+                                        }
                                     }
                                 }
                             }

@@ -51,7 +51,7 @@ struct ContentView: View {
                                 .offset(x: 0, y: 10)
                                 .foregroundColor(.green)
                                 
-                                .rotationEffect(Angle(degrees:  -(server.rudderAngle * 2)), anchor: UnitPoint.top)
+                                .rotationEffect(Angle(degrees:  (server.rudderAngle * 2)), anchor: UnitPoint.top)
                                 .offset(x: 0, y: -35)
                             }
                         }
@@ -83,11 +83,13 @@ struct ContentView: View {
                                         }else{
                                             server.setCommand(server.editedCommand)
                                         }
+                                        server.editingCommand = false
                                         focusField = nil
                                         focusCommand = false
                                         focusMode = false
-                                        
+
                                     }else{
+                                        server.editingCommand = true
                                         focusCommand = true
                                         focusMode = false
                                         focusField = .command
@@ -132,6 +134,7 @@ struct ContentView: View {
                             .onTapGesture {
                                 if focusMode{
                                     server.setMode(PyPilot.modes[Int(server.editedMode)])
+                                    server.editingCommand = false
                                     server.editedCommand = Double(!server.engaged ? server.rudderAngle : server.command)
                                         focusField = nil
                                         focusMode = false
@@ -164,12 +167,19 @@ struct ContentView: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             if server.connectionState == .disconnected {
+                                server.errorMessage = nil
                                 server.connect()
                             }
                         }
-                    Text("Tap to connect")
-                        .foregroundStyle(.red)
-                        .fontWeight(.bold)
+                    VStack {
+                        if let msg = server.errorMessage, !msg.isEmpty {
+                            Text(msg)
+                                .multilineTextAlignment(.center)
+                        }
+                        Text("Tap to connect")
+                            .foregroundStyle(.red)
+                            .fontWeight(.bold)
+                    }
                 }else if server.errorMessage != nil &&   !server.errorMessage!.isEmpty {
                     Capsule()
                         .background(.ultraThinMaterial)
@@ -263,6 +273,7 @@ struct ContentView: View {
             switch newValue {
             case .active:
                 server.connect()
+                server.editingCommand = false
                 server.editedCommand  = server.command
                 server.editedMode = Double(PyPilot.modes.firstIndex(where: { e in
                     e == server.mode
